@@ -224,7 +224,7 @@ module.exports = function ({ config, db, logger }) {
     for (let stream of json.streams) {
       if (stream.codec_type === 'audio') {
         streamTypes.aud = 4
-        if (firstAudioStream < 1) firstAudioStream = stream.index
+        if (firstAudioStream < 0) firstAudioStream = stream.index
       } else if (stream.codec_type === 'video') {
         if (stream.codec_time_base === '0/1') {
           streamTypes.still = 1
