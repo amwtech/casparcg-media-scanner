@@ -3,7 +3,9 @@ CasparCG Media-Scanner
 
 This project facilitates CasparCG Server since version 2.2.0. It abstracts the collection of metadata and generation of thumbnails into a separate process.
 
-Each media file is allocated to one of three types - AUDIO, STILL, MOVIE. The file is probed using ffprobe and the returned properties are used to determine the media type. This clone of the SVT Media Scanner uses a modified algorithm to allocate the media type. Information in the algorithm is contained in Media-Type-Allocation.md
+Each media file is allocated to one of three types - AUDIO, STILL, MOVIE. The file is examined using **ffprobe** with returned properties used to determine the media type.  
+
+**This** version of the SVT Media Scanner uses a modified algorithm to allocate the media type. Information about the algorithm is contained in Media-Type-Allocation.md. The latest release is version 1.2.1 Beta.
 
 Usage
 -----
@@ -13,11 +15,11 @@ This project is designed to be used via the AMCP protocol in CasparCG server. Ho
 ### Requirements
 
 The scanner needs a copy of `ffmpeg` to be able to scan any media files. On windows, a copy of `ffmpeg.exe` should be placed in the same folder as the scanner executable. On linux, `ffmpeg` should be made available on the path.  
+
 You can override these locations in the scanner configuration.
 
 ### Configuration
-There are various options that can be changed for the scanner. These can all be set by environment variables or as arguments.
-Some features are disabled by default and should be enabled in this way.
+There are various options that can be changed for the scanner. These can all be set by environment variables or as arguments. Some features are disabled by default and should be enabled in this way.
 
 To change options with arguments use the following syntax: `scanner.exe --metadata.scenes true --metadata.sceneThreshold 0.5`
 
