@@ -212,63 +212,61 @@ module.exports = function ({ config, db, logger }) {
     }
   }
 
-  function generateCinf (doc, json) {
-    let tb = [0,1]
-    let dur = parseFloat(json.format.duration) || (1 / 24)
+  function generateCinf(doc, json) {
+		const dur = parseFloat(json.format.duration) || 1 / 24
+    const stillLimit = 0.1
 
-    let type = ' AUDIO '
-    let streamTypes = {aud:0, vid:0, still:0}
-    let firstAudioStream = -1
-    let firstVideoStream = -1
+    let audioTb = null
+		let videoTb = null
+		let stillTb = null
+    let audioDur = null
 
-    for (let stream of json.streams) {
-      if (stream.codec_type === 'audio') {
-        streamTypes.aud = 4
-        if (firstAudioStream < 0) firstAudioStream = stream.index
-      } else if (stream.codec_type === 'video') {
-        if (stream.codec_time_base === '0/1') {
-          streamTypes.still = 1
-        } else {
-          streamTypes.vid = 2
-          if (firstVideoStream < 0) firstVideoStream = stream.index
+		for (const stream of json.streams) {
+			if (stream.codec_type === 'audio') {
+				if (!audioTb) {
+          audioTb = (stream.time_base || '1/25').split('/')
+          audioDur = parseFloat(stream.duration)
         }
-      }
-    }
+			} else if (stream.codec_type === 'video') {
+        if ((Number(stream.duration ?? '0') < stillLimit) || (stream.disposition.attached_pic === 1) || (stream.codec_name === 'gif')) {
+					if (!stillTb) stillTb = [0, 1]
+				} else {
+					if (!videoTb) {
+						const fr = String(stream.avg_frame_rate || stream.r_frame_rate || '').split('/')
+						if (fr.length === 2) {
+							videoTb = [Number(fr[1]), Number(fr[0])]
+						} else {
+							videoTb = (stream.time_base || '1/25').split('/')
+						}
+					}
+				}
+			}
+		}
 
-    switch (streamTypes.aud + streamTypes.vid + streamTypes.still) {
-      case 0:
-      case 4:
-      case 5:
-        type = ' AUDIO '
-        tb = (json.streams[firstAudioStream].time_base || '1/25').split('/')
-        break
+		let type = ''
+		let tb = [0,0]
+		if (videoTb) {
+			type = ' MOVIE '
+			tb = videoTb
+		} else if ((stillTb && !audioTb) || (stillTb && audioTb && (audioDur < stillLimit))){
+			type = ' STILL '
+			tb = stillTb
+		} else {
+			type = ' AUDIO '
+			tb = audioTb ?? [0, 1]
+		}
 
-      case 1:
-        type = ' STILL '
-        tb = [0,1]
-        break
-
-      case 2:
-      case 3:
-      case 6:
-      case 7:
-        const fr = String(json.streams[firstVideoStream].avg_frame_rate || json.streams[firstVideoStream].r_frame_rate || '').split('/')
-        type = ' MOVIE '
-        if (fr.length ===2) {
-          tb = [fr[1], fr[0]]
-        }
-        break
-    }
-
-    return [
-      `"${getId(config.paths.media, doc.mediaPath)}"`,
-      type,
-      doc.mediaSize,
-      moment(doc.thumbTime).format('YYYYMMDDHHmmss'),
-      tb[0] === 0 ? 0 : Math.floor((dur * tb[1]) / tb[0]),
-      `${tb[0]}/${tb[1]}`
-    ].join(' ') + '\r\n'
-  }
+		return (
+			[
+				`"${getId(config.paths.media, doc.mediaPath)}"`,
+				type,
+				doc.mediaSize,
+				moment(doc.thumbTime).format('YYYYMMDDHHmmss'),
+				tb[0] === 0 ? 0 : Math.floor((dur * tb[1]) / tb[0]),
+				`${tb[0]}/${tb[1]}`,
+			].join(' ') + '\r\n'
+		)
+	}
 
   async function generateMediainfo (doc, json) {
     const fieldOrder = await new Promise((resolve, reject) => {
