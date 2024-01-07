@@ -5,10 +5,15 @@ This project facilitates CasparCG Server since version 2.2.0. It abstracts the c
 
 Each media file is allocated to one of three types - AUDIO, STILL, MOVIE. The file is examined using **ffprobe** with returned properties used to determine the media type.  
 
-**This** version of the SVT Media Scanner uses a modified algorithm to allocate the media type. Information about the algorithm is contained in Media-Type-Allocation.md. The latest release is version 1.2.1 Beta.
+**This** version of the SVT Media Scanner uses a modified algorithm to allocate the media type (relative to release 1.1). Information about the algorithm is contained in Media-Type-Allocation.md. The latest release is version 1.2.1 Beta.
 
-Usage
------
+## --------------------------------
+### NOTE
+The algorithm used in v1.2.1 Beta has been merged into release 1.3.1 of the of the CasparCG Media Scanner repository. I therefore recommend using the official release because it supports both Windows and Linux OS hosts. I will leave this repository open, but do not anticipate tracking any developments applied to the main repository.
+
+## --------------------------------
+
+## Usage
 
 This project is designed to be used via the AMCP protocol in CasparCG server. However, there are some endpoints for additional data which can only be access directly over http.
 
